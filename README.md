@@ -63,6 +63,8 @@ Problems with required fields
 Since we are migrating the submisssion from different source, don't validate the form. If you really need to set value for required fields, follow the source repository of this repository.
 
 Comment the following line in the core file and migrate the submissions.
+
 Filename: core/lib/Drupal/Core/Form/FormBuilder.php 
+
 $this->formValidator->validateForm($form_id, $form, $form_state); 
 

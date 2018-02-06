@@ -43,15 +43,6 @@ class Component {
    */
   public function createFormElement() : array {
     $info = $this->info;
-    if ($info['value'] == '[current-user:name_themed_plain]' || $info['value'] == '[current-user:name]' || $info['value'] == '[current-user:profile-full-name-sm]' || $info['value'] == '[current-user:profile_full_name]') {
-      $info['value'] = '[current-user:display-name]';
-    }
-    if ($info['value'] == '[current-user:profile-location-sm]') {
-      $info['value'] = '[current-user:field_location]';
-    }
-    if ($info['value'] == '[current-user:profile_title]') {
-      $info['value'] = '[current-user:field_user_title]';
-    }
     $data = unserialize($info['extra']);
     $return = [
       '#title' => $info['name'],

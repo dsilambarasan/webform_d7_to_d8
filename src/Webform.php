@@ -104,7 +104,7 @@ class Webform {
     /* Use this if source and destination nid does not match.
     $tablePrefix = $this->getConnection('upgrade')->tablePrefix();
     if ($tablePrefix == TABLEPREFIX) {
-      $destid = db_query('select destid1 from migrate_map_upgrade_d7_node_webform where sourceid1=' . $this->getNid())->fetchField();
+      $destid = db_query('select destid1 from migrate_map_upgrade_d7_node_webform where sourceid1 = ' . $this->getNid())->fetchField();
       if ($destid != '') {
         $nid = $destid;
       }
@@ -115,66 +115,70 @@ class Webform {
       'title' => $this->title,
     ], $options);
 
-    //Components settings.
-    $components = $this->webformComponents();
-    $this->print($this->t('Form @n: Processing components', ['@n' => $this->getNid()]));
-    $this->updateD8Components($this->getDrupalObject(), $components->toFormArray(), $this->options);
+    if (!isset($options['only_submissions']) || $options['only_submissions'] == FALSE) {
+      //Components settings.
+      $components = $this->webformComponents();
+      $this->print($this->t('Form @n: Processing components', ['@n' => $this->getNid()]));
+      $this->updateD8Components($this->getDrupalObject(), $components->toFormArray(), $this->options);
 
-    // Form settings.
-    $webformSettings = current($this->webformFormSettings());
-    $config_factory = \Drupal::configFactory();
-    $config = $config_factory->getEditable('webform.webform.webform_' . $nid);
-    $webformStatus = $webformSettings->status == 1 ? 'open' : 'closed';
-    $config->set('status', $webformStatus)->save();
+      // Form settings.
+      $webformSettings = current($this->webformFormSettings());
+      $config_factory = \Drupal::configFactory();
+      $config = $config_factory->getEditable('webform.webform.webform_' . $nid);
+      $webformStatus = $webformSettings->status == 1 ? 'open' : 'closed';
+      $config->set('status', $webformStatus)->save();
 
-    $config = $config_factory->getEditable('webform.webform.webform_' . $nid);
-    $settings = $config->get('settings');
-    $settings['confirmation_type'] = 'page' ;
-    if ($webformSettings->confirmation != '' && $webformSettings->redirect_url != '<confirmation>') {
-      $settings['confirmation_type'] = 'url_message';
-    }
-    elseif ($webformSettings->confirmation == '' && $webformSettings->redirect_url != '<confirmation>') {
-      $settings['confirmation_type'] = 'url';
-    }
-    elseif ($webformSettings->redirect_url == '<none>') {
-      $settings['confirmation_type'] = 'inline';
-    }
-    $settings['confirmation_message'] = $webformSettings->confirmation;
-    $config->set('settings', $settings)->save();
-
-    //Email settings.
-    $templates = $this->emailTemplates();
-    $config_factory = \Drupal::configFactory();
-    $config = $config_factory->getEditable('webform.webform.webform_' . $nid);
-    $handlers = $config->get('handlers');
-    foreach ($templates as $key => $value) {
-      $ekey = $key == 0 ? 'email' : 'email_' . $key;
-      $handlers[$ekey] = [
-        'id' => 'email',
-        'label' => 'Email',
-        'handler_id' => $ekey,
-        'status' => 1,
-        'conditions' => [],
-        'weight' => 0
-      ];
-      $handlers[$ekey]['settings']['from_name'] = $value->from_name;
-      $handlers[$ekey]['settings']['from_mail'] = $value->from_address;
-      $handlers[$ekey]['settings']['to_mail'] = $value->email;
-      $handlers[$ekey]['settings']['subject'] = $value->subject;
-      $handlers[$ekey]['settings']['body'] = str_replace('submission:value', 'webform_submission:value', $value->template);
-      $config->set('handlers', $handlers)->save();
-    }
-
-    // Webform Submissions.
-    $submissions = $this->webformSubmissions()->toArray();
-    foreach ($submissions as $submission) {
-      $this->print($this->t('Form @n: Processing submission @s', ['@n' => $this->getNid(), '@s' => $submission->getSid()]));
-      try {
-        $submission->process();
+      $config = $config_factory->getEditable('webform.webform.webform_' . $nid);
+      $settings = $config->get('settings');
+      $settings['confirmation_type'] = 'page';
+      if ($webformSettings->confirmation != '' && $webformSettings->redirect_url != '<confirmation>') {
+        $settings['confirmation_type'] = 'url_message';
       }
-      catch (\Throwable $t) {
-        $this->print('ERROR with submission (errors and possible fixes will be shown at the end of the process)');
-        WebformMigrator::instance()->addError($t->getMessage());
+      elseif ($webformSettings->confirmation == '' && $webformSettings->redirect_url != '<confirmation>') {
+        $settings['confirmation_type'] = 'url';
+      }
+      elseif ($webformSettings->redirect_url == '<none>') {
+        $settings['confirmation_type'] = 'inline';
+      }
+      $settings['confirmation_message'] = $webformSettings->confirmation;
+      $config->set('settings', $settings)->save();
+
+      //Email settings.
+      $templates = $this->emailTemplates();
+      $config_factory = \Drupal::configFactory();
+      $config = $config_factory->getEditable('webform.webform.webform_' . $nid);
+      $handlers = $config->get('handlers');
+      foreach ($templates as $key => $value) {
+        $ekey = $key == 0 ? 'email' : 'email_' . $key;
+        $handlers[$ekey] = [
+          'id' => 'email',
+          'label' => 'Email',
+          'handler_id' => $ekey,
+          'status' => 1,
+          'conditions' => [],
+          'weight' => 0
+        ];
+        $handlers[$ekey]['settings']['from_name'] = $value->from_name;
+        $handlers[$ekey]['settings']['from_mail'] = $value->from_address;
+        $handlers[$ekey]['settings']['to_mail'] = $value->email;
+        $handlers[$ekey]['settings']['subject'] = $value->subject;
+        $handlers[$ekey]['settings']['body'] = str_replace('submission:value', 'webform_submission:value', $value->template);
+        $config->set('handlers', $handlers)->save();
+      }
+    }
+
+    if ($options['submissions'] == TRUE || $options['only_submissions'] == TRUE) {
+      // Webform Submissions.
+      $submissions = $this->webformSubmissions()->toArray();
+      foreach ($submissions as $submission) {
+        $this->print($this->t('Form @n: Processing submission @s', ['@n' => $this->getNid(), '@s' => $submission->getSid()]));
+        try {
+          $submission->process();
+        }
+        catch (\Throwable $t) {
+          $this->print('ERROR with submission (errors and possible fixes will be shown at the end of the process)');
+          WebformMigrator::instance()->addError($t->getMessage());
+        }
       }
     }
     #$node = node_load($this->getNid());

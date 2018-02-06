@@ -83,6 +83,12 @@ trait Utilities {
         $this->addChildComponent($value, $info);
       }
     }
+    foreach ($info as $key => $value) {
+      unset($value['pid']);
+      unset($value['cid']);
+      unset($value['form_key']);
+      $info[$key] = $value;
+    }
     $this->printR($info);
     $webform->setElements($info);
     if (!(isset($options['simulate']) && $options['simulate'])) {
@@ -130,6 +136,9 @@ trait Utilities {
     foreach ($info as $key => &$data) {
       if ($value['pid'] == $data['cid']) {
         $data[$value['form_key']] = $value;
+        unset($data[$value['form_key']]['pid']);
+        unset($data[$value['form_key']]['cid']);
+        unset($data[$value['form_key']]['form_key']);
         unset($info[$value['form_key']]);
       }
     }
