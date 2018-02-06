@@ -1,7 +1,8 @@
 Webform Drupal 7 to Drupal 8
 -----
 
-Source: https://github.com/dcycle/webform_d7_to_d8ource
+Source: https://github.com/dcycle/webform_d7_to_d8
+
 Extended the above module for the following.
 
 1. Mapping more component types.
