@@ -1,6 +1,17 @@
 Webform Drupal 7 to Drupal 8
 -----
 
+Source: https://github.com/dcycle/webform_d7_to_d8ource
+Extended the above module for the following.
+
+1. Mapping more component types.
+2. Form settings - email, confirmation configurations.
+3. One level parent-child relationship between the elements/components.
+4. DeleteSubmissions based on webform id.
+5. Multiple sources configuration based on tableprefix.
+5. And more...
+
+
 A Drupal 8 module to migrate webforms and their submissions from Drupal 7 to Drupal 8.
 
 For more information on why this was create, see the blog post [Migrating Webforms from Drupal 7 to Drupal 8, Dec. 18, 2017, Dcycle Blog](http://blog.dcycle.com/blog/2017-12-18/migrating-webforms-drupal7-to-drupal8/)
@@ -48,11 +59,9 @@ You can also run the migration with different options:
 Problems with required fields
 -----
 
-If webform 123 was created in Drupal 7 with field name as not required, then submissions were created without the name field, and then later on the name field was set to required, we might have issues importing submissions without the name field. You might see something like:
+Since we are migrating the submisssion from different source, don't validate the form. If you really need to set value for required fields, follow the source repository of this repository.
 
-    The following ERRORS occured during import.
-    Errors with the following fields (they might be required, for example) for webform 123: name
+Comment the following line in the core file and migrate the submissions.
+Filename: core/lib/Drupal/Core/Form/FormBuilder.php 
+$this->formValidator->validateForm($form_id, $form, $form_state); 
 
-To fix this, you can run the import like this:
-
-    drush ev 'webform_d7_to_d8(["defaults if required" => [123 => ["name" => "default name"]]])'
