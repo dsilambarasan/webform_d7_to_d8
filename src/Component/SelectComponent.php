@@ -32,9 +32,12 @@ class SelectComponent extends Component {
     foreach ($lines as $line) {
       $elements = explode('|', $line);
       if (count($elements) == 1) {
+        $elements[0] = str_replace("\r", '', $elements[0]);
         $elements[1] = $elements[0];
       }
       if ($elements[0]) {
+        $elements[0] = str_replace("\r", '', $elements[0]);
+        $elements[1] = str_replace("\r", '', $elements[1]);
         $return[$elements[0]] = $elements[1];
       }
     }

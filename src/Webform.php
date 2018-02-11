@@ -109,7 +109,6 @@ class Webform {
         $nid = $destid;
       }
     }
-    */
     $this->drupalObject = $this->updateD8Webform([
       'id' => 'webform_' . $nid,
       'title' => $this->title,
@@ -228,6 +227,7 @@ class Webform {
     $query->addField('c', 'form_key');
     $query->addField('wd', 'sid');
     $query->addField('wd', 'data');
+    $query->addField('wd', 'no');
     $query->addField('ws', 'uid');
     $query->addField('ws', 'remote_addr');
     $query->addField('ws', 'submitted');
@@ -235,9 +235,19 @@ class Webform {
     $result = $query->execute()->fetchAll();
     $return = [];
     foreach ($result as $row) {
-      $return[$row->sid][$row->form_key] = [
-        'value' => $row->data,
-      ];
+      $property = preg_replace('/[^A-Za-z0-9\ ]/', '', trim($row->no));
+      $property = strtolower(str_replace(' ', '_', $property));
+      if ($property == '0') {
+        $return[$row->sid][$row->form_key] = [
+          'value' => $row->data,
+        ];
+      }
+      else {
+        $value[0][$property] = $row->data;
+        $return[$row->sid][$row->form_key] = [
+          'value' =>  $value,
+        ];
+      }
       $return[$row->sid]['extra']['uid'] = $row->uid;
       $return[$row->sid]['extra']['remote_addr'] = $row->remote_addr;
       $return[$row->sid]['extra']['submitted'] = $row->submitted;

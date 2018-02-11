@@ -79,15 +79,24 @@ trait Utilities {
     }
     $this->print('Replacing components for the webform with...');
     foreach ($info as $key => $value) {
-      if ($value['pid'] != 0) {
-        $this->addChildComponent($value, $info);
-      }
+      $content[$value['cid']][$key] = $value;
     }
-    foreach ($info as $key => $value) {
-      unset($value['pid']);
-      unset($value['cid']);
-      unset($value['form_key']);
-      $info[$key] = $value;
+    krsort($content);
+    $this->ocontent = $content;
+    foreach ($content as $ckey => $cvalue) {
+      #if ($value['pid'] != 0) {
+        $this->addChildComponent($cvalue, $content);
+      #}
+    }
+    $info = [];
+    ksort($content);
+    foreach ($content as $value) {
+      $ckey = key($value);
+      $cvalue = current($value);
+      unset($cvalue['pid']);
+      unset($cvalue['cid']);
+      unset($cvalue['form_key']);
+      $info[$ckey] = $cvalue;
     }
     $this->printR($info);
     $webform->setElements($info);
@@ -133,15 +142,29 @@ trait Utilities {
    * Form 1 level Parent-child relationship.
    */
   public function addChildComponent($value, &$info) {
+    $cvalue = current($value);
+    foreach ($info as $key => $data) {
+      if ($key == $cvalue['pid']) {
+        $info_key = key($data);
+        unset($info[$cvalue['cid']][$cvalue['form_key']]['pid']);
+        unset($info[$cvalue['cid']][$cvalue['form_key']]['cid']);
+        unset($info[$cvalue['cid']][$cvalue['form_key']]['form_key']);
+        $form_key = $cvalue['form_key'];
+        $info[$key][$info_key][$form_key] = $info[$cvalue['cid']];
+        unset($info[$cvalue['cid']]);
+      }
+    }
+
+/*
     foreach ($info as $key => &$data) {
       if ($value['pid'] == $data['cid']) {
         $data[$value['form_key']] = $value;
-        unset($data[$value['form_key']]['pid']);
-        unset($data[$value['form_key']]['cid']);
-        unset($data[$value['form_key']]['form_key']);
+#        unset($data[$value['form_key']]['pid']);
+#        unset($data[$value['form_key']]['cid']);
+#        unset($data[$value['form_key']]['form_key']);
         unset($info[$value['form_key']]);
       }
-    }
+    } */
   }
 
 }

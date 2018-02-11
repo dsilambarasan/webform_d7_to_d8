@@ -82,7 +82,34 @@ class Component {
       $return['#prev_button_label'] = 'Prev';
       $return['#next_button_label'] = 'Next';
     }
-
+    if ($info['type'] == 'grid') {
+      $return['#type'] = 'webform_custom_composite';
+      $return['#multiple'] = false;
+      $return['#multiple__header'] = false;
+      $return['#multiple__sorting'] = false;
+      $return['#multiple__operations'] = false;
+      $options = array_filter(explode(PHP_EOL, $data['options']));
+      foreach ($options as $value) {
+        $value = str_replace("\r", '', $value);
+        $coptions[$value] = $value;
+      }
+      $i=0;
+      $questions = array_filter(explode(PHP_EOL, $data['questions']));
+      foreach ($questions as $question) {
+        #$key = $i == 0 ? '' : '_' . $i;
+        $key = '';
+        $base = preg_replace('/[^A-Za-z0-9\ ]/', '', trim($question));
+        $base = strtolower(str_replace(' ', '_', $base));
+        $question = str_replace("\r", '', $question);
+        $return['#element'][$base . $key] = [
+          '#type' => 'radios',
+          '#options' => $coptions,
+          '#title' => $question,
+        ];
+        $i++;
+      }
+      #print_r(json_encode($return)); exit;
+    }
     $this->extraInfo($return);
 
     return $return;
