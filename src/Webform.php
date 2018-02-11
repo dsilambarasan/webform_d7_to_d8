@@ -108,7 +108,7 @@ class Webform {
       if ($destid != '') {
         $nid = $destid;
       }
-    }
+    } */
     $this->drupalObject = $this->updateD8Webform([
       'id' => 'webform_' . $nid,
       'title' => $this->title,

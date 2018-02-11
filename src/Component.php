@@ -108,7 +108,6 @@ class Component {
         ];
         $i++;
       }
-      #print_r(json_encode($return)); exit;
     }
     $this->extraInfo($return);
 
